@@ -5,6 +5,7 @@ from game_states import GameStates
 from entity import Entity, get_blocking_entities_at_location
 from map_objects.game_map import GameMap
 from components.fighter import Fighter
+from components.inventory import Inventory
 from input_handlers import handle_keys
 from render_functions import render_all, clear_all, RenderOrder
 from fov_functions import initialize_fov, recompute_fov
@@ -37,6 +38,7 @@ def main():
     fov_radius = 10
 
     max_monsters_per_room = 3
+    max_items_per_room = 2
 
     colors = {
         'dark_wall': libtcod.Color(0, 0, 100),
@@ -46,8 +48,9 @@ def main():
     }
 
     fighter_component = Fighter(hp=30, defense=2, power=5)
-    player = Entity(0, 0, '@', libtcod.white, 'Player',
-                    True, RenderOrder.ACTOR, fighter_component)
+    inventory_component = Inventory(26)
+    player = Entity(0, 0, '@', libtcod.white, 'Player',True,
+                    RenderOrder.ACTOR, fighter_component, inventory_component)
     entities = [player]
 
     libtcod.console_set_custom_font('assets/img.png', libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
@@ -59,7 +62,8 @@ def main():
 
     game_map = GameMap(map_width, map_height)
     game_map.make_map(max_rooms, room_min_size, room_max_size,
-                      map_width, map_height, player, entities, max_monsters_per_room)
+                      map_width, map_height, player, entities,
+                      max_monsters_per_room, max_items_per_room)
 
     fov_recompute = True
 
@@ -90,6 +94,7 @@ def main():
         action = handle_keys(key)
 
         move = action.get('move')
+        pickup = action.get('pickup')
         exit = action.get('exit')
         fullscreen = action.get('fullscreen')
         player_turn_results = []
